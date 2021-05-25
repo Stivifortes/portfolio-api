@@ -18,20 +18,19 @@ const PORT = process.env.PORT || 8080;
 app.get("/projects", async (req, res) => {
   try {
     const projects = await knex.select().from("projects");
-    res.json({ data: projects });
+    res.json({ projects });
   } catch (error) {
     console.log(error);
     res.sendStatus(500);
   }
 });
 
-//Create a project
+//Create a project - Need to get the token in the headers
 app.post("/project", auth, sanitizeProject, async (req, res) => {
-  //Pegar o id atravez de token
-
   try {
     const userid = req.userId;
-    const { project, description, repository, image_url } = req.body;
+    const username = req.username;
+    const { project, description, repository, image_url, id_user } = req.body;
     const id = await knex("projects").insert(
       {
         name: project,
@@ -44,7 +43,15 @@ app.post("/project", auth, sanitizeProject, async (req, res) => {
     );
     res.json({
       message: "project successfully inserted!",
-      data: { id, project, description, repository, image_url, id_user },
+      data: {
+        id,
+        username,
+        project,
+        description,
+        repository,
+        image_url,
+        id_user,
+      },
     });
   } catch (error) {
     res.status(500).json({ message: "Couldnt insert project" });
@@ -103,6 +110,7 @@ app.post("/signin", sanitizeUserCredentials, async (req, res) => {
     return res.sendStatus(500);
   }
 });
+
 //Delete a project
 app.delete("/project", async (req, res) => {});
 
